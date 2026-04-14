@@ -1,0 +1,74 @@
+using Microsoft.EntityFrameworkCore;
+using RealStateApp.Core.Application.Dtos.Agent;
+using RealStateApp.Core.Application.Dtos.User;
+using RealStateApp.Core.Application.Interfaces;
+using RealStateApp.Core.Application.ViewModels.Agent;
+using RealStateApp.Core.Domain.Common;
+using RealStateApp.Core.Domain.Interfaces;
+
+namespace RealStateApp.Core.Application.Services;
+
+public class AgentService : IAgentService
+{
+    private readonly IBaseAccountService _accountServiceForWebApp;
+    private readonly IPropertyRepository _propertyRepository;
+
+    public AgentService(IBaseAccountService accountService, IPropertyRepository propertyRepository)
+    {
+        _accountServiceForWebApp = accountService;
+        _propertyRepository = propertyRepository;
+    }
+
+    public async Task<List<AgentWithPropertyCountDto>> GetAllAgentsWithCount()
+    {
+        var userAgents = await _accountServiceForWebApp.GetAllUserOfRole(Roles.Agent, false);
+        var agentsWithPropertyCount = new List<AgentWithPropertyCountDto>();
+        
+        foreach (var userAgent in userAgents)
+        {
+            int propertyCount = await _propertyRepository.GetAllQueryable().AsNoTracking()
+                .CountAsync(p => p.AgentId == userAgent.Id);
+            
+            agentsWithPropertyCount.Add(new AgentWithPropertyCountDto
+            {
+                PropertyCount = propertyCount,
+                User = userAgent
+            });
+        }
+        return agentsWithPropertyCount;
+    }
+    
+    public async Task<List<UserDto>> GetAllAgents(bool onlyActive = false, string? name = null)
+    {
+        var userAgents = await _accountServiceForWebApp.GetAllUserOfRole(Roles.Agent, onlyActive);
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            userAgents.RemoveAll(u => !$"{u.FirstName} {u.LastName}".Contains(name, StringComparison.InvariantCultureIgnoreCase));
+        }
+        userAgents = userAgents.OrderBy(u => u.FirstName).ToList();
+
+        return userAgents;
+    }
+
+    // Estos metodos simplemente devuelven el Objeto result del accountService
+    public async Task<Result> SetStatus(string userId, bool state)
+    {
+        return await _accountServiceForWebApp.SetStateOnUser(userId, state);
+    }
+    
+    public async Task<Result> DeleteAsync(string userId)
+    {
+         var deleteResult = await _accountServiceForWebApp.DeleteAsync(userId);
+         if (deleteResult.IsSuccess)
+         {
+             var rowAffected = await _propertyRepository.GetAllQueryable().Where(property => property.AgentId == userId).ExecuteDeleteAsync();
+         }
+         return deleteResult;
+    }
+    public async Task<Result<UserDto>> Edit(UserSaveDto dto, string? origin)
+    {
+        dto.Role = nameof(Roles.Agent); // Solo para rectificar. Al fin y al cabo este metodo es un decorador
+        return await _accountServiceForWebApp.EditUser(dto, origin);
+    }
+}
