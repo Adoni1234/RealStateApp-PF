@@ -7,7 +7,8 @@
 
 <style>
     body {
-        background: #f5f7fb;
+        background: #f4f6fb;
+        font-family: 'Segoe UI', sans-serif;
     }
 
     .sidebar {
@@ -16,19 +17,27 @@
     }
 
     .filter-card {
-        border-radius: 15px;
+        border-radius: 18px;
+        border: none;
     }
 
     .filter-title {
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 18px;
     }
 
     .form-control, .form-select {
-        border-radius: 10px;
+        border-radius: 12px;
+        height: 42px;
+    }
+
+    .form-control:focus, .form-select:focus {
+        box-shadow: 0 0 0 0.15rem rgba(78, 115, 223, 0.25);
     }
 
     .btn {
-        border-radius: 10px;
+        border-radius: 12px;
+        font-weight: 600;
     }
 
     .btn-primary {
@@ -37,24 +46,51 @@
     }
 
     .btn-primary:hover {
-        transform: scale(1.03);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
     }
 
     .properties-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
 
     .properties-header h4 {
-        font-weight: 600;
+        font-weight: 700;
     }
 
     .badge-results {
         background: #e9ecef;
-        padding: 5px 10px;
-        border-radius: 10px;
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+
+    .filter-group {
+        margin-bottom: 15px;
+    }
+
+    .filter-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 4px;
+    }
+
+    .card {
+        transition: 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+    }
+
+    .empty-state {
+        padding: 40px;
+        border-radius: 15px;
+        background: #ffffff;
     }
 </style>
 
@@ -72,9 +108,8 @@
 
                         <input type="hidden" asp-for="Filters.OnlyFavorites" value="@Model.Filters.OnlyFavorites" />
 
-                        <!-- Tipo -->
-                        <div class="mb-3">
-                            <label class="form-label">Tipo</label>
+                        <div class="filter-group">
+                            <label>Tipo de propiedad</label>
                             <select class="form-select" name="Filters.SelectedPropertyTypeId">
                                 <option value="">Todos</option>
                                 @foreach (var type in Model.PropertyTypes)
@@ -86,40 +121,35 @@
                             </select>
                         </div>
 
-                        <!-- Código -->
-                        <div class="mb-3">
-                            <label class="form-label">Código</label>
-                            <input type="text" name="Filters.PropertyCode" class="form-control"
-                                   value="@Model.Filters.PropertyCode" placeholder="Ej: APT-001" />
+                        <div class="filter-group">
+                            <label>Código</label>
+                            <input type="text" name="Filters.PropertyCode"
+                                   class="form-control"
+                                   placeholder="APT-001"
+                                   value="@Model.Filters.PropertyCode" />
                         </div>
 
-                        <!-- Precio -->
-                        <div class="row">
-                            <div class="col">
+                        <div class="filter-group">
+                            <label>Precio</label>
+                            <div class="d-flex gap-2">
                                 <input type="number" name="Filters.MinValue"
-                                       class="form-control mb-2"
-                                       placeholder="Min $" value="@Model.Filters.MinValue" />
-                            </div>
-                            <div class="col">
+                                       class="form-control"
+                                       placeholder="Min" value="@Model.Filters.MinValue" />
                                 <input type="number" name="Filters.MaxValue"
-                                       class="form-control mb-2"
-                                       placeholder="Max $" value="@Model.Filters.MaxValue" />
+                                       class="form-control"
+                                       placeholder="Max" value="@Model.Filters.MaxValue" />
                             </div>
                         </div>
 
-                        <!-- Habitaciones y baños -->
-                        <div class="row">
-                            <div class="col">
+                        <div class="filter-group">
+                            <label>Habitaciones / Baños</label>
+                            <div class="d-flex gap-2">
                                 <input type="number" name="Filters.Rooms"
-                                       class="form-control mb-2"
-                                       placeholder="Habitaciones"
-                                       value="@Model.Filters.Rooms" />
-                            </div>
-                            <div class="col">
+                                       class="form-control"
+                                       placeholder="Hab." value="@Model.Filters.Rooms" />
                                 <input type="number" name="Filters.Bathrooms"
-                                       class="form-control mb-2"
-                                       placeholder="Baños"
-                                       value="@Model.Filters.Bathrooms" />
+                                       class="form-control"
+                                       placeholder="Baños" value="@Model.Filters.Bathrooms" />
                             </div>
                         </div>
 
@@ -137,9 +167,9 @@
         <div class="col-md-9 col-lg-9">
 
             <div class="properties-header">
-                <h4>🏠 Propiedades disponibles</h4>
+                <h4> Propiedades disponibles</h4>
                 <span class="badge-results">
-                    @Model.Properties?.Count() resultados
+                    @(Model.Properties?.Count() ?? 0) resultados
                 </span>
             </div>
 
@@ -148,8 +178,11 @@
                 @if (Model.Properties == null || !Model.Properties.Any())
                 {
                     <div class="col-12">
-                        <div class="alert alert-info text-center">
-                            No se encontraron propiedades con los filtros seleccionados.
+                        <div class="empty-state text-center shadow-sm">
+                            <h5 class="mb-2"> No hay resultados</h5>
+                            <p class="text-muted">
+                                Intenta ajustar los filtros para encontrar propiedades.
+                            </p>
                         </div>
                     </div>
                 }
