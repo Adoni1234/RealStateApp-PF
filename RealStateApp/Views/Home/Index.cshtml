@@ -5,103 +5,184 @@
     ViewData["Title"] = "Listado de Propiedades";
 }
 
+<style>
+    body {
+        background: #f4f6fb;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .sidebar {
+        position: sticky;
+        top: 20px;
+    }
+
+    .filter-card {
+        border-radius: 18px;
+        border: none;
+    }
+
+    .filter-title {
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 12px;
+        height: 42px;
+    }
+
+    .form-control:focus, .form-select:focus {
+        box-shadow: 0 0 0 0.15rem rgba(78, 115, 223, 0.25);
+    }
+
+    .btn {
+        border-radius: 12px;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #4e73df, #1cc88a);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    .properties-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .properties-header h4 {
+        font-weight: 700;
+    }
+
+    .badge-results {
+        background: #e9ecef;
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+
+    .filter-group {
+        margin-bottom: 15px;
+    }
+
+    .filter-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6c757d;
+        margin-bottom: 4px;
+    }
+
+    .card {
+        transition: 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+    }
+
+    .empty-state {
+        padding: 40px;
+        border-radius: 15px;
+        background: #ffffff;
+    }
+</style>
+
 <div class="container-fluid">
     <div class="row">
 
-        <!-- ==== SIDEBAR DE FILTROS ==== -->
-        <div class="col-md-3 col-lg-3 mb-4">
-            <div class="card shadow-sm">
+        <!-- ==== SIDEBAR ==== -->
+        <div class="col-md-3 col-lg-3 mb-4 sidebar">
+            <div class="card shadow-sm filter-card">
                 <div class="card-body">
 
-                    <h5 class="mb-3">Filtros</h5>
-                    <form asp-area="" asp-controller="Home" asp-action="Index" method="get">
+                    <h5 class="filter-title mb-3">🔍 Filtros</h5>
+
+                    <form asp-controller="Home" asp-action="Index" method="get">
 
                         <input type="hidden" asp-for="Filters.OnlyFavorites" value="@Model.Filters.OnlyFavorites" />
 
-                        <!-- Tipo de propiedad -->
-                        <div class="mb-3">
-                            <label class="form-label">Tipo de Propiedad</label>
+                        <div class="filter-group">
+                            <label>Tipo de propiedad</label>
                             <select class="form-select" name="Filters.SelectedPropertyTypeId">
                                 <option value="">Todos</option>
                                 @foreach (var type in Model.PropertyTypes)
                                 {
-                                    if (type.Id == Model.Filters.SelectedPropertyTypeId)
-                                    {
-                                        <option value="@type.Id" selected="selected">@type.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@type.Id">@type.Name</option>
-                                    }
+                                    <option value="@type.Id" selected="@(type.Id == Model.Filters.SelectedPropertyTypeId)">
+                                        @type.Name
+                                    </option>
                                 }
                             </select>
                         </div>
-                        
-                        <!-- Codigo -->
-                        <div class="mb-3">
-                            <label class="form-label">Codigo</label>
-                            <input type="text"
-                                   name="Filters.PropertyCode"
+
+                        <div class="filter-group">
+                            <label>Código</label>
+                            <input type="text" name="Filters.PropertyCode"
                                    class="form-control"
+                                   placeholder="APT-001"
                                    value="@Model.Filters.PropertyCode" />
                         </div>
 
-                        <!-- Precio mínimo -->
-                        <div class="mb-3">
-                            <label class="form-label">Precio Mínimo</label>
-                            <input type="number"
-                                   name="Filters.MinValue"
-                                   class="form-control"
-                                   value="@Model.Filters.MinValue" />
+                        <div class="filter-group">
+                            <label>Precio</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" name="Filters.MinValue"
+                                       class="form-control"
+                                       placeholder="Min" value="@Model.Filters.MinValue" />
+                                <input type="number" name="Filters.MaxValue"
+                                       class="form-control"
+                                       placeholder="Max" value="@Model.Filters.MaxValue" />
+                            </div>
                         </div>
 
-                        <!-- Precio máximo -->
-                        <div class="mb-3">
-                            <label class="form-label">Precio Máximo</label>
-                            <input type="number"
-                                   name="Filters.MaxValue"
-                                   class="form-control"
-                                   value="@Model.Filters.MaxValue" />
+                        <div class="filter-group">
+                            <label>Habitaciones / Baños</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" name="Filters.Rooms"
+                                       class="form-control"
+                                       placeholder="Hab." value="@Model.Filters.Rooms" />
+                                <input type="number" name="Filters.Bathrooms"
+                                       class="form-control"
+                                       placeholder="Baños" value="@Model.Filters.Bathrooms" />
+                            </div>
                         </div>
 
-                        <!-- Habitaciones -->
-                        <div class="mb-3">
-                            <label class="form-label">Habitaciones</label>
-                            <input type="number"
-                                   name="Filters.Rooms"
-                                   class="form-control"
-                                   value="@Model.Filters.Rooms" />
-                        </div>
-
-                        <!-- Baños -->
-                        <div class="mb-3">
-                            <label class="form-label">Baños</label>
-                            <input type="number"
-                                   name="Filters.Bathrooms"
-                                   class="form-control"
-                                   value="@Model.Filters.Bathrooms" />
-                        </div>
-
-                        <div class="d-grid gap-2 mt-4">
+                        <div class="d-grid gap-2 mt-3">
                             <button type="submit" class="btn btn-primary">Buscar</button>
-                            <a asp-action="Index" class="btn btn-secondary">Limpiar</a>
+                            <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
                         </div>
 
                     </form>
-
                 </div>
             </div>
         </div>
 
-        <!-- ==== LISTADO DE PROPIEDADES ==== -->
+        <!-- ==== LISTADO ==== -->
         <div class="col-md-9 col-lg-9">
-            <div class="row">
+
+            <div class="properties-header">
+                <h4> Propiedades disponibles</h4>
+                <span class="badge-results">
+                    @(Model.Properties?.Count() ?? 0) resultados
+                </span>
+            </div>
+
+            <div class="row g-4">
 
                 @if (Model.Properties == null || !Model.Properties.Any())
                 {
                     <div class="col-12">
-                        <div class="alert alert-info text-center">
-                            No se encontraron propiedades con los filtros seleccionados.
+                        <div class="empty-state text-center shadow-sm">
+                            <h5 class="mb-2"> No hay resultados</h5>
+                            <p class="text-muted">
+                                Intenta ajustar los filtros para encontrar propiedades.
+                            </p>
                         </div>
                     </div>
                 }
@@ -109,14 +190,16 @@
                 {
                     @foreach (var prop in Model.Properties)
                     {
-                        @if (User.IsInRole(nameof(Roles.Client)))
-                        {
-                            @await Html.PartialAsync("_PropertyCardClient", prop)
-                        }
-                        else
-                        {
-                            @await Html.PartialAsync("_PropertyCard", prop)
-                        }
+                        <div class="col-md-6 col-lg-4">
+                            @if (User.IsInRole(nameof(Roles.Client)))
+                            {
+                                @await Html.PartialAsync("_PropertyCardClient", prop)
+                            }
+                            else
+                            {
+                                @await Html.PartialAsync("_PropertyCard", prop)
+                            }
+                        </div>
                     }
                 }
 

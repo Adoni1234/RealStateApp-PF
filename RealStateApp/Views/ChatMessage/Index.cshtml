@@ -6,14 +6,104 @@
     var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
 }
 
-<div class="container py-4">
+<style>
+    body {
+        background: #eef2f7;
+    }
 
-    <h3 class="mb-4">Chat de la propiedad @Model.PropertyCode</h3>
+    .chat-container {
+        max-width: 800px;
+        margin: auto;
+    }
 
-    <div class="card shadow-sm">
-        
-        <!-- Área de historial -->
-        <div class="card-body overflow-auto" style="height: 450px; background: #f1f3f5;">
+    .chat-card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #4e73df, #1cc88a);
+        color: white;
+        padding: 15px;
+        font-weight: 600;
+    }
+
+    .chat-body {
+        height: 450px;
+        overflow-y: auto;
+        background: #f8f9fc;
+        padding: 20px;
+    }
+
+    .chat-bubble {
+        padding: 12px 16px;
+        border-radius: 15px;
+        max-width: 70%;
+        position: relative;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .mine {
+        background: #4e73df;
+        color: white;
+        border-bottom-right-radius: 5px;
+    }
+
+    .other {
+        background: white;
+        border-bottom-left-radius: 5px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .chat-meta {
+        font-size: 12px;
+        margin-top: 5px;
+        opacity: 0.7;
+    }
+
+    .chat-footer {
+        background: white;
+        padding: 10px;
+    }
+
+    .chat-input {
+        border-radius: 20px;
+        resize: none;
+        padding: 10px 15px;
+    }
+
+    .send-btn {
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+    }
+
+    .send-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="container py-4 chat-container">
+
+    <div class="card shadow chat-card">
+
+        <!-- Header -->
+        <div class="chat-header">
+            💬 Chat - Propiedad @Model.PropertyCode
+        </div>
+
+        <!-- Mensajes -->
+        <div class="chat-body" id="chatBody">
+
             @if (Model == null || !Model.Messages.Any())
             {
                 <p class="text-center text-muted mt-4">No hay mensajes aún.</p>
@@ -25,46 +115,65 @@
                     bool isMine = msg.SenderId == currentUserId;
 
                     <div class="d-flex mb-3 @(isMine ? "justify-content-end" : "justify-content-start")">
-                        <div class="p-3 rounded-3 
-                            @(isMine ? "bg-primary text-white" : "bg-light")
-                            " style="max-width: 75%;">
-                            
+                        
+                        <div class="chat-bubble @(isMine ? "mine" : "other")">
+
                             <div class="fw-semibold small mb-1">
                                 @(isMine ? "Tú" : msg.Sender?.FirstName + " " + msg.Sender?.LastName)
                             </div>
 
                             <div>@msg.Message</div>
 
-                            <div class="text-end small text-muted mt-1">
+                            <div class="text-end chat-meta">
                                 @msg.SentAt.ToString("g")
                             </div>
+
                         </div>
+
                     </div>
                 }
             }
+
         </div>
 
-        <!-- Área para escribir y enviar mensaje -->
-        <div class="card-footer">
-            <form asp-action="SendMessage" asp-controller="ChatMessage" method="post">
-                <div class="input-group">
+        <!-- Input -->
+        <div class="chat-footer">
+            <form asp-action="SendMessage" asp-controller="ChatMessage" method="post" id="chatForm">
+                
+                <div class="d-flex gap-2">
+
                     <textarea 
                         name="Message" 
-                        class="form-control" 
-                        rows="2" 
-                        placeholder="Escribe un mensaje..." 
+                        class="form-control chat-input" 
+                        rows="1"
+                        placeholder="Escribe un mensaje..."
                         required></textarea>
 
                     <input type="hidden" name="propertyId" value="@Model.PropertyId" />
                     <input type="hidden" name="receiverId" value="@Model.ReceiverId" />
                     <input type="hidden" name="senderId" value="@Model.SenderId" />
 
-                    <button class="btn btn-primary" type="submit">
+                    <button class="btn btn-primary send-btn" type="submit">
                         <i class="bi bi-send-fill"></i>
                     </button>
+
                 </div>
+
             </form>
         </div>
-    </div>
 
+    </div>
 </div>
+
+<script>
+    // Auto scroll al último mensaje
+    const chatBody = document.getElementById("chatBody");
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    // Auto resize textarea
+    const textarea = document.querySelector("textarea");
+    textarea.addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = this.scrollHeight + "px";
+    });
+</script>
