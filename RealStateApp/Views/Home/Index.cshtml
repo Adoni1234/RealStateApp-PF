@@ -79,9 +79,10 @@
         margin-bottom: 4px;
     }
 
-    .card {
-        transition: 0.3s;
-    }
+.card {
+    word-break: normal;
+    overflow-wrap: break-word;
+}
 
     .card:hover {
         transform: translateY(-4px);
@@ -172,7 +173,6 @@
                     @(Model.Properties?.Count() ?? 0) resultados
                 </span>
             </div>
-
             <div class="row g-4">
 
                 @if (Model.Properties == null || !Model.Properties.Any())
@@ -190,7 +190,8 @@
                 {
                     @foreach (var prop in Model.Properties)
                     {
-                        <div class="col-md-6 col-lg-4">
+                        <!-- 🔥 SOLO ESTE CAMBIO -->
+                        <div class="col-12 col-md-6 col-lg-6">
                             @if (User.IsInRole(nameof(Roles.Client)))
                             {
                                 @await Html.PartialAsync("_PropertyCardClient", prop)
@@ -202,6 +203,8 @@
                         </div>
                     }
                 }
+
+            </div>
 
             </div>
         </div>

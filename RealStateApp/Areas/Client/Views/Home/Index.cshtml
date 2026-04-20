@@ -1,0 +1,66 @@
+﻿@model List<PropertyViewModel>
+
+@{
+    ViewData["Title"] = "Mis propiedades";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0">
+        <i class="bi bi-house-check"></i> Mis propiedades
+    </h3>
+    <span class="badge bg-secondary fs-6">@Model.Count resultado@(Model.Count != 1 ? "s" : "")</span>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-house-slash fs-1 text-muted"></i>
+            <h5 class="mt-3">No tienes propiedades compradas</h5>
+            <p class="text-muted">Cuando tu oferta sea aceptada, la propiedad aparecerá aquí.</p>
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-primary mt-2">
+                Ver propiedades disponibles
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var prop in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm h-100">
+
+                    @{
+                        var img = prop.PropertyImages.FirstOrDefault()?.ImagePath ?? "/images/no-image.png";
+                    }
+                    <img src="@img"
+                         class="card-img-top"
+                         alt="Imagen de propiedad"
+                         style="height:180px; object-fit:cover;" />
+
+                    <div class="card-body">
+                        <h5 class="card-title">@prop.PropertyType?.Name</h5>
+                        <p class="text-muted small mb-1">Código: @prop.Code</p>
+                        <p class="text-muted small mb-2">Tipo de venta: @prop.SaleType?.Name</p>
+                        <p class="fw-bold text-primary">RD$ @prop.Price.ToString("N0")</p>
+                        <ul class="list-inline small mb-0">
+                            <li class="list-inline-item"><i class="bi bi-door-open"></i> @prop.Rooms Hab.</li>
+                            <li class="list-inline-item"><i class="bi bi-droplet"></i> @prop.Bathrooms Baños</li>
+                            <li class="list-inline-item"><i class="bi bi-bounding-box-circles"></i> @prop.SizeInMeters m²</li>
+                        </ul>
+                    </div>
+
+                    <div class="card-footer bg-white">
+                        <a asp-area="" asp-controller="Home" asp-action="Details" asp-route-id="@prop.Id"
+                           class="btn btn-outline-primary w-100">
+                            Ver detalles
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        }
+    </div>
+}

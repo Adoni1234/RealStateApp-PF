@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Areas\Client\Controllers\" />
+      <Folder Include="Areas\Client\Controllers\NewFolder\" />
     </ItemGroup>
 
     <ItemGroup>
